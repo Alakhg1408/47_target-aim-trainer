@@ -1,6 +1,7 @@
 import pygame
 import random
 from .target import Target
+from .sound_manager import SoundManager
 
 # Game Engine
 
@@ -48,6 +49,7 @@ class GameEngine:
         self.margin = 60
         self.hud_height = 60
         self.difficulty = "Medium"
+        self.sound_mgr = SoundManager()
         self.target = self._spawn_target()
 
         self.round_seconds = 30
@@ -121,9 +123,11 @@ class GameEngine:
         if self.target.contains_point(x, y):
             self.hits += 1
             self.score += 1
+            self.sound_mgr.play("hit")
             self.target = self._spawn_target()
         else:
             self.misses += 1
+            self.sound_mgr.play("miss")
 
     def handle_input(self):
         # Reserved for continuously-held-key input; this game is
@@ -137,12 +141,15 @@ class GameEngine:
         self.time_left_frames -= 1
         if self.time_left_frames <= 0:
             self.game_over = True
+            self.sound_mgr.play("game_over")
             return
 
         self.target.update()
         if self.target.expired():
             self.misses += 1  # letting a target time out counts as a miss too
+            self.sound_mgr.play("miss")
             self.target = self._spawn_target()
+
 
     def accuracy(self):
         total = self.hits + self.misses
